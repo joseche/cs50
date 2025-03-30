@@ -1,0 +1,7 @@
+For CS50X the code was submmited from the codespaces.
+
+The unit testing for the solutions is here:
+https://github.com/cs50/problems/tree/2025/x
+
+My submitions are here:
+https://submit.cs50.io/users/joseche
