@@ -3,6 +3,7 @@ import numpy as np
 import os
 import sys
 import tensorflow as tf
+from tensorflow.keras import models, layers
 
 from sklearn.model_selection import train_test_split
 
@@ -24,9 +25,7 @@ def main():
 
     # Split data into training and testing sets
     labels = tf.keras.utils.to_categorical(labels)
-    x_train, x_test, y_train, y_test = train_test_split(
-        np.array(images), np.array(labels), test_size=TEST_SIZE
-    )
+    x_train, x_test, y_train, y_test = train_test_split(np.array(images), np.array(labels), test_size=TEST_SIZE)
 
     # Get a compiled neural network
     model = get_model()
@@ -35,7 +34,7 @@ def main():
     model.fit(x_train, y_train, epochs=EPOCHS)
 
     # Evaluate neural network performance
-    model.evaluate(x_test,  y_test, verbose=2)
+    model.evaluate(x_test, y_test, verbose=2)
 
     # Save model to file
     if len(sys.argv) == 3:
@@ -58,7 +57,20 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    images = []
+    labels = []
+    for label in os.listdir(data_dir):
+        print(f"processing: {label}")
+        label_path = os.path.join(data_dir, label)
+        label_int = int(label)
+        if os.path.isdir(label_path):
+            for img_name in os.listdir(label_path):
+                img_file_path = os.path.join(data_dir, label, img_name)
+                img = cv2.imread(img_file_path)
+                resized_img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
+                images.append(resized_img)
+                labels.append(label_int)
+    return (images, labels)
 
 
 def get_model():
@@ -67,7 +79,21 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    model = models.Sequential()
+    model.add(layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)))
+    model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+    model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+    model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+    model.add(layers.MaxPooling2D((2, 2)))
+    # model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+    # model.add(layers.MaxPooling2D((2, 2)))
+    model.add(layers.Flatten())
+    model.add(layers.Dense(128, activation="relu"))
+    model.add(layers.Dropout(0.5))
+    model.add(layers.Dense(NUM_CATEGORIES, activation="softmax"))
+
+    model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+    return model
 
 
 if __name__ == "__main__":
