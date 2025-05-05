@@ -46,8 +46,7 @@ def get_mask_token_index(mask_token_id, inputs):
     `None` if not present in the `inputs`.
     """
     input_ids = inputs["input_ids"]
-    if isinstance(input_ids, tf.Tensor):
-        input_ids = input_ids.numpy().tolist()[0]
+    input_ids = input_ids.numpy().tolist()[0]
     try:
         return input_ids.index(mask_token_id)
     except ValueError:
